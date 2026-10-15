@@ -12,6 +12,7 @@ import { SpeedReviewScreen } from '../screens/SpeedReviewScreen';
 import { TypingReviewScreen } from '../screens/TypingReviewScreen';
 import { CardEditorModal } from '../screens/CardEditorModal';
 import { DeckEditorModal } from '../screens/DeckEditorModal';
+import { ImportExportScreen } from '../screens/ImportExportScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -68,6 +69,7 @@ export const AppNavigator: React.FC = () => {
       >
         <Stack.Screen name="MainTabs" component={TabNavigator} />
         <Stack.Screen name="DeckDetail" component={DeckDetailScreen} />
+        <Stack.Screen name="ImportExport" component={ImportExportScreen} />
         <Stack.Screen
           name="Study"
           component={StudyScreen}

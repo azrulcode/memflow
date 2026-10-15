@@ -84,7 +84,21 @@ This launches `http://localhost:8081` with full keyboard and mouse support.
 - **Daily Learning Goal**: Visual circular / linear progress bar tracking cards reviewed today against your target.
 - **Mastery Levels**: Tracks cards as `new`, `learning`, `review`, and `mastered`.
 
-### 4. Preloaded Starter Decks
+### 4. Open-Source Import, Export & Offline Backup
+- **Anki (.txt / .tsv) & CSV Import**:
+  - Direct file picker (`.csv`, `.tsv`, `.txt`, `.json`) or quick **Clipboard Paste**.
+  - Auto-delimiter detection (tab, comma, semicolon, pipe).
+  - Automatic HTML stripping (cleans `<b>`, `<br>`, `<div>` artifacts from Anki).
+  - Import into a new deck or append into any existing deck.
+- **Export Any Deck to CSV / JSON**:
+  - Export custom decks to open in Anki, Excel, Google Sheets, or share with friends via iOS Share Sheet / Desktop download.
+- **Manual Full Offline Backup & Restore**:
+  - 100% private and offline-first — no cloud account or sync servers needed.
+  - Export a single `memflow_backup.json` containing all decks, cards, review history, and streaks.
+  - Save directly to iPhone Files app, iCloud Drive, AirDrop, or download on computer.
+
+### 5. Preloaded Starter Decks
+- 🇷🇺 **Russian Essentials & Cyrillic**: Core conversational phrases, Cyrillic reading with phonetics & stress marks, travel survival ("Привет", "Спасибо", "Пожалуйста", "Где метро?"), and native `ru-RU` TTS audio pronunciation.
 - 🇪🇸 **Spanish Essentials**: High-frequency conversational phrases, travel vocab & survival questions.
 - 🇯🇵 **Japanese Everyday & Kanji**: Core greetings, Kanji with Furigana & Romaji, and cultural phrases.
 - 🇫🇷 **French Conversation**: Essential phrases, cafe vocabulary, and everyday idioms.

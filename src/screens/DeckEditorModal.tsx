@@ -17,6 +17,7 @@ import { saveDeck } from '../services/storage';
 import { triggerSuccessHaptic } from '../services/haptics';
 
 const LANGUAGES = [
+  { name: 'Russian', code: 'ru-RU' },
   { name: 'Spanish', code: 'es-ES' },
   { name: 'Japanese', code: 'ja-JP' },
   { name: 'French', code: 'fr-FR' },

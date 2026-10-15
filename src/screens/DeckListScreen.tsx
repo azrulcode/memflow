@@ -11,7 +11,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Flame, Zap, Plus, BookOpen, Sparkles, Trophy } from 'lucide-react-native';
+import { Flame, Zap, Plus, BookOpen, Sparkles, Trophy, Upload } from 'lucide-react-native';
 import { Deck, UserStats } from '../types/card';
 import { getDecks, getUserStats, initializeStorage } from '../services/storage';
 import { DeckCard } from '../components/DeckCard';
@@ -126,13 +126,26 @@ export const DeckListScreen: React.FC = () => {
         {/* Decks Section Header */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Your Decks</Text>
-          <TouchableOpacity
-            style={styles.newDeckButton}
-            onPress={handleCreateDeck}
-          >
-            <Plus size={16} color="#4F46E5" />
-            <Text style={styles.newDeckText}>New Deck</Text>
-          </TouchableOpacity>
+          <View style={styles.headerButtonRow}>
+            <TouchableOpacity
+              style={styles.importButton}
+              onPress={() => {
+                triggerSelectionHaptic();
+                navigation.navigate('ImportExport');
+              }}
+            >
+              <Upload size={14} color="#059669" />
+              <Text style={styles.importButtonText}>Import / Backup</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.newDeckButton}
+              onPress={handleCreateDeck}
+            >
+              <Plus size={15} color="#4F46E5" />
+              <Text style={styles.newDeckText}>New Deck</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Deck List */}
@@ -289,6 +302,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: '#0F172A',
+  },
+  headerButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  importButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  importButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#059669',
   },
   newDeckButton: {
     flexDirection: 'row',

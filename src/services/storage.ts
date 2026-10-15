@@ -296,3 +296,66 @@ export async function resetToDefaultData(): Promise<void> {
   await AsyncStorage.setItem(STATS_KEY, JSON.stringify(initialStats));
   await AsyncStorage.removeItem(LOGS_KEY);
 }
+
+export interface BackupData {
+  version: number;
+  appName: string;
+  exportedAt: string;
+  decks: Deck[];
+  cards: Card[];
+  stats: UserStats;
+  logs?: ReviewLog[];
+}
+
+export async function exportFullBackup(): Promise<string> {
+  const decks = await getDecks();
+  const cards = await getCards();
+  const stats = await getUserStats();
+  const rawLogs = await AsyncStorage.getItem(LOGS_KEY);
+  const logs = rawLogs ? JSON.parse(rawLogs) : [];
+
+  const backup: BackupData = {
+    version: 1,
+    appName: 'MemFlow',
+    exportedAt: new Date().toISOString(),
+    decks,
+    cards,
+    stats,
+    logs,
+  };
+
+  return JSON.stringify(backup, null, 2);
+}
+
+export async function importFullBackup(jsonString: string): Promise<{ deckCount: number; cardCount: number }> {
+  try {
+    const data: BackupData = JSON.parse(jsonString);
+    if (!data.decks || !data.cards) {
+      throw new Error('Invalid backup file: missing decks or cards');
+    }
+
+    await AsyncStorage.setItem(DECKS_KEY, JSON.stringify(data.decks));
+    await AsyncStorage.setItem(CARDS_KEY, JSON.stringify(data.cards));
+    if (data.stats) {
+      await AsyncStorage.setItem(STATS_KEY, JSON.stringify(data.stats));
+    }
+    if (data.logs) {
+      await AsyncStorage.setItem(LOGS_KEY, JSON.stringify(data.logs));
+    }
+
+    return {
+      deckCount: data.decks.length,
+      cardCount: data.cards.length,
+    };
+  } catch (error) {
+    throw new Error('Failed to parse backup JSON: ' + (error instanceof Error ? error.message : String(error)));
+  }
+}
+
+export async function importDeckWithCards(deck: Deck, newCards: Card[]): Promise<void> {
+  await saveDeck(deck);
+  const existingCards = await getCards();
+  const updatedCards = [...existingCards, ...newCards];
+  await AsyncStorage.setItem(CARDS_KEY, JSON.stringify(updatedCards));
+}
+

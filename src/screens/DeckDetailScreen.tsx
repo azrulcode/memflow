@@ -23,11 +23,14 @@ import {
   Volume2,
   Sparkles,
   Layers,
+  Share2,
+  Upload,
 } from 'lucide-react-native';
 import { Card, Deck } from '../types/card';
 import { getDeckById, getCards, deleteCard, deleteDeck } from '../services/storage';
 import { speakText } from '../services/audio';
-import { triggerLightHaptic, triggerSelectionHaptic } from '../services/haptics';
+import { triggerLightHaptic, triggerSelectionHaptic, triggerSuccessHaptic } from '../services/haptics';
+import { exportDeckToCsv, shareOrDownloadFile } from '../services/exporter';
 
 export const DeckDetailScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -98,6 +101,31 @@ export const DeckDetailScreen: React.FC = () => {
     }
   };
 
+  const handleExportDeckCsv = async () => {
+    if (!deck || cards.length === 0) {
+      if (Platform.OS === 'web') {
+        window.alert('Add some cards before exporting.');
+      } else {
+        Alert.alert('Empty Deck', 'Add some cards before exporting.');
+      }
+      return;
+    }
+    triggerSelectionHaptic();
+    try {
+      const csv = exportDeckToCsv(deck, cards);
+      const safeTitle = deck.title.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `${safeTitle}_cards.csv`;
+      await shareOrDownloadFile(fileName, csv, 'text/csv');
+      triggerSuccessHaptic();
+    } catch (err: any) {
+      if (Platform.OS === 'web') {
+        window.alert('Export Error: ' + err.message);
+      } else {
+        Alert.alert('Export Error', err.message);
+      }
+    }
+  };
+
   const filteredCards = cards.filter(
     (c) =>
       c.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -119,9 +147,27 @@ export const DeckDetailScreen: React.FC = () => {
           <ArrowLeft size={22} color="#0F172A" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleDeleteDeck} style={styles.deleteDeckBtn}>
-          <Trash2 size={20} color="#EF4444" />
-        </TouchableOpacity>
+        <View style={styles.headerRightRow}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ImportExport', { initialDeckId: deck.id })}
+            style={styles.headerActionBtn}
+            accessibilityLabel="Import cards into deck"
+          >
+            <Upload size={18} color="#4F46E5" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleExportDeckCsv}
+            style={styles.headerActionBtn}
+            accessibilityLabel="Export deck to CSV"
+          >
+            <Share2 size={18} color="#059669" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleDeleteDeck} style={styles.deleteDeckBtn}>
+            <Trash2 size={18} color="#EF4444" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -281,6 +327,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerRightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerActionBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
