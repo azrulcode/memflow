@@ -1,41 +1,80 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# MemFlow — AI Agent Handoff & Architecture Guide
 
-## Expo has changed — do not trust your training data
+Welcome, Agent! This document contains essential context, architectural rules, and guidelines for continuing development on **MemFlow**.
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+---
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+## 🎯 Project Overview & Mission
+- **What it is**: An open-source, free, cross-platform flashcard application inspired by Memrise and Anki, with Duolingo-style gamification (streaks, XP, goals).
+- **Core Audience**: Learners studying languages (with specific focus on Russian, Japanese, Spanish, and French) and custom user-created flashcards.
+- **Platforms**: iOS (primary target via Expo Go), Android, and Desktop (Web/React Native for Web).
 
-## Commands
+---
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+## ⚠️ Key Design Principles & Constraints
+1. **100% Offline-First (No Cloud Sync)**:
+   - The user explicitly requested **no cloud sync or backend servers**.
+   - All persistence is handled locally via `AsyncStorage` (`@react-native-async-storage/async-storage`).
+   - Backup & restore is strictly **manual** (exporting/importing self-contained JSON backup files via iOS Share Sheet or browser downloads).
+2. **User-Generated & Anki-First Content**:
+   - The primary goal is letting users create their own flashcards or import Anki decks / CSV / TSV files, rather than relying on locked proprietary content.
+3. **Multiplatform Audio & Haptics**:
+   - Audio is generated using native Text-to-Speech via `expo-speech` (supporting `ru-RU`, `es-ES`, `ja-JP`, `fr-FR`, `en-US`, etc.).
+   - Haptics are wrapped in safe cross-platform guards in `src/services/haptics.ts` so they never crash on web or desktop.
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
+---
+
+## 📁 Codebase Layout
+
+```text
+memflow/
+├── src/
+│   ├── types/
+│   │   └── card.ts             # Card, Deck, ReviewLog, UserStats data models
+│   ├── services/
+│   │   ├── srs.ts              # SuperMemo SM-2 & FSRS spaced repetition engine
+│   │   ├── storage.ts          # Local AsyncStorage manager & backup export/restore
+│   │   ├── importer.ts         # Anki (.txt/.tsv), CSV, and text-paste parser
+│   │   ├── exporter.ts         # CSV export and iOS Share Sheet / Web download
+│   │   ├── audio.ts            # Text-to-Speech audio engine (expo-speech)
+│   │   └── haptics.ts          # Tactile feedback helpers (expo-haptics)
+│   ├── data/
+│   │   └── seedDecks.ts        # Russian, Spanish, Japanese, French starter decks
+│   ├── components/
+│   │   ├── FlashCard.tsx       # 3D perspective flip card with audio trigger
+│   │   ├── RatingBar.tsx       # Again (1d), Hard (2d), Good (4d), Easy (7d) controls
+│   │   ├── DeckCard.tsx        # Deck list item with due badge and quick actions
+│   │   └── ProgressBar.tsx     # Animated progress indicator
+│   ├── navigation/
+│   │   └── AppNavigator.tsx    # React Navigation (Native Stack + Bottom Tabs)
+│   └── screens/
+│       ├── DeckListScreen.tsx  # Home screen: deck catalog, streak, quick study
+│       ├── DeckDetailScreen.tsx# Deck view, mode launcher, card list, export CSV
+│       ├── StudyScreen.tsx     # Classic SRS 3D flip card review session
+│       ├── SpeedReviewScreen.tsx # 5-second countdown rapid-fire multiple-choice quiz
+│       ├── TypingReviewScreen.tsx# Active orthography & typing drill
+│       ├── ImportExportScreen.tsx# Anki/CSV file import, paste text, manual backup
+│       ├── CardEditorModal.tsx # Add/edit flashcard modal
+│       ├── DeckEditorModal.tsx # Create new language deck modal
+│       └── StatsScreen.tsx     # Streak counter, XP accumulator, and review analytics
+├── App.tsx                     # App entry point (SafeAreaProvider + AppNavigator)
+└── package.json                # Dependencies (Expo SDK 57, React Native 0.86, React 19)
 ```
 
-Run lint and typecheck before declaring any task done.
+---
 
-## Navigation & Routing
+## 🛠️ Verification & Commands
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+```bash
+# Start development server
+npx expo start
 
-## Building with EAS
+# Start desktop web preview
+npx expo start --web
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+# Type check
+node --stack-size=8192 ./node_modules/typescript/bin/tsc --noEmit
 
-## Rules
-
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+# Test web bundling
+npx expo export -p web
+```
